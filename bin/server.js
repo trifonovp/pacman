@@ -2,15 +2,12 @@ const { start } = require('@splunk/otel');
 
 start({
    serviceName: 'pacman',
-   endpoint: 'http://localhost:4317'
-});
-
-start({
-   serviceName: 'pacman',
+   endpoint: 'http://localhost:4317',
    metrics: { runtimeMetricsEnabled: true },
-   profiling: { memoryProfilingEnabled: true }
+   profiling: {                       // Activates CPU profiling
+      memoryProfilingEnabled: true,   // Activates Memory profiling
+   }
 });
-
 
 // Rest of your main module
 
