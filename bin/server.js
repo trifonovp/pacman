@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+   
 const { start } = require('@splunk/otel');
 
 start({
@@ -11,9 +13,6 @@ start({
 });
 
 // Rest of your main module
-
-
-#!/usr/bin/env node
 
 /**
  * Module dependencies.
