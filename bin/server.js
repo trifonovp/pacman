@@ -4,7 +4,6 @@ const { start } = require('@splunk/otel');
 
 start({
    serviceName: 'pacman',
-   endpoint: 'http://localhost:4317',
    logLevel: 'debug',
    metrics: { runtimeMetricsEnabled: true },
    profiling: {                       // Activates CPU profiling
