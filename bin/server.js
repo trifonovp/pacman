@@ -1,3 +1,20 @@
+const { start } = require('@splunk/otel');
+
+start({
+   serviceName: 'pacman',
+   endpoint: 'http://localhost:4317'
+});
+
+start({
+   serviceName: 'pacman',
+   metrics: { runtimeMetricsEnabled: true },
+   profiling: { memoryProfilingEnabled: true }
+});
+
+
+// Rest of your main module
+
+
 #!/usr/bin/env node
 
 /**
