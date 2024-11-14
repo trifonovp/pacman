@@ -5,7 +5,7 @@
   "author": "Ivan Font <ivan@ivanfont.com>",
   "main": "bin/server.js",
   "scripts": {
-    "start": "node -r .",
+    "start": "node -r @splunk/otel/instrument .",
     "dev": "nodemon ."
   },
   "license": "GPLv3",
