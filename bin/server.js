@@ -1,17 +1,4 @@
 #!/usr/bin/env node
-   
-const { start } = require('@splunk/otel');
-
-start({
-   serviceName: 'pacman',
-   logLevel: 'debug',
-   metrics: { runtimeMetricsEnabled: true },
-   profiling: {                       // Activates CPU profiling
-      memoryProfilingEnabled: true,   // Activates Memory profiling
-   }
-});
-
-// Rest of your main module
 
 /**
  * Module dependencies.
