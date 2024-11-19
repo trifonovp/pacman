@@ -1,25 +1,3 @@
-// initialize tracer at start of script
-const opentelemetry = require('@opentelemetry/api');
-const tracer = opentelemetry.trace.getTracer('my-tracer');
-
-// extended the following method with manual instrumentation 
-// (a span that adds attributes to infer mongodb servie and implies an error when connection request fails)
-Database.connect(app, function(err) {
-    const span = tracer.startSpan('initConnect',{ 'kind':opentelemetry.SpanKind.CLIENT});
-    span.setAttribute('db.system','mongodb');
-    span.setAttribute('db.name','pacmandb');
-    if (err) {
-        console.log('Failed to connect to database server');
-        span.setAttribute('otel.status_code','error');
-        span.setAttribute('error',true);
-        span.setAttribute('sf_error',true);
-    } else {
-        console.log('Connected to database server successfully');
-        span.setAttribute('status','success');
-    }
-    span.end();
-});
-
 'use strict';
 
 var express = require('express');
