@@ -1,5 +1,15 @@
 const opentelemetry = require('@opentelemetry/api');
 const tracer = opentelemetry.trace.getTracer('my-tracer');
+const { start } = require('@splunk/otel');
+
+start({
+   serviceName: 'pacman',
+   endpoint: 'http://localhost:4317',
+   metrics: { runtimeMetricsEnabled: true },
+   profiling: { memoryProfilingEnabled: true }
+});
+
+// Rest of your main module
 
 'use strict';
 
