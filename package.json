@@ -6,6 +6,7 @@
   "main": "bin/server.js",
   "scripts": {
     "start": "node -r @splunk/otel/instrument .",
+    "start:mdb": "node -r ./tracing.js .",
     "dev": "nodemon ."
   },
   "license": "GPLv3",
