@@ -28,5 +28,4 @@ RUN chmod -R go+r /usr/src/app/node_modules/@opentelemetry/api
 EXPOSE 8080
 
 # Run container
-CMD ["npm", "start"]
-CMD ["npm", "start:mdb"]
+CMD ["npm", "run", "start:mdb"]
