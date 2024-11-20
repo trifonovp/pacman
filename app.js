@@ -56,12 +56,14 @@ Database.connect(app, function(err) {
     span.setAttribute('db.name','pacmandb');
     if (err) {
         console.log('Failed to connect to database server');
+        span.setAttribute('custom_error_details', 'Failed to connect to database server');
         span.setAttribute('otel.status_code','error');
         span.setAttribute('error',true);
         span.setAttribute('sf_error',true);
     } else {
         console.log('Connected to database server successfully');
         span.setAttribute('status','success');
+        span.setAttribute('custom_error_details', 'Connected to database server successfully');
     }
     span.end();
 });
