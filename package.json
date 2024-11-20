@@ -5,7 +5,8 @@
   "author": "Ivan Font <ivan@ivanfont.com>",
   "main": "bin/server.js",
   "scripts": {
-    "start": "node .",
+    "start": "node -r @splunk/otel/instrument .",
+    "start:mdb": "node -r ./mdb_tracing.js .",
     "dev": "nodemon ."
   },
   "license": "GPLv3",

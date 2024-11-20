@@ -29,3 +29,4 @@ EXPOSE 8080
 
 # Run container
 CMD ["npm", "start"]
+CMD ["npm", "start:mdb"]
