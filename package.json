@@ -9,7 +9,6 @@
     "dev": "nodemon ."
   },
   "license": "GPLv3",
-  "type": "module",
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/instrumentation-express": "^0.45.0",
