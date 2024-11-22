@@ -3,6 +3,36 @@
 <!--<html lang="en">-->
 <html lang="en" manifest="cache.manifest">
 <head>
+/*
+
+IMPORTANT: Replace the <version> placeholder in the src URL with a
+version from https://github.com/signalfx/splunk-otel-js-web/releases
+
+*/
+<script src="https://cdn.signalfx.com/o11y-gdi-rum/latest/splunk-otel-web.js" crossorigin="anonymous"></script>
+<script>
+    SplunkRum.init({
+        realm: "us2",
+        rumAccessToken: "H6t8M6YW2E33YG1OMRCFtw",
+        applicationName: "pacman",
+        deploymentEnvironment: "o11y2lab-local-nova"
+    });
+</script>
+/*
+
+IMPORTANT: Replace the <version> placeholder in the src URL with a
+version from https://github.com/signalfx/splunk-otel-js-web/releases
+
+*/
+
+<script src="https://cdn.signalfx.com/o11y-gdi-rum/latest/splunk-otel-web-session-recorder.js" crossorigin="anonymous"></script>
+<script>
+SplunkSessionRecorder.init({
+  app: "pacman",
+  realm: "us2",
+  rumAccessToken: "H6t8M6YW2E33YG1OMRCFtw"
+});
+</script>
     <meta charset="utf-8" />
     <title>Pac-Man</title>
     <link rel="stylesheet" href="style.css">
