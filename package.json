@@ -14,7 +14,7 @@
     "@opentelemetry/instrumentation-express": "^0.45.0",
     "@opentelemetry/instrumentation-http": "^0.55.0",
     "@opentelemetry/instrumentation-mongodb": "^0.49.0",
-    "@splunk/otel": "^2.14.0",
+    "@splunk/otel": "^3.0.1",
     "@splunk/otel-web": "^0.19.3",
     "@splunk/otel-web-session-recorder": "^0.19.3",
     "body-parser": "^1.17.1",
