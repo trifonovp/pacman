@@ -59,7 +59,7 @@ Database.connect(app, function(err) {
     if (err) {
         console.log('Failed to connect to database server');
         span.setAttribute('custom_error_details', 'Failed to connect to database server');
-        span.setAttribute('otel.status_code','error');
+        span.setAttribute('otel.status_code','ERROR');
         span.setAttribute('error',true);
         span.setAttribute('sf_error',true);
     } else {
