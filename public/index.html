@@ -26,7 +26,7 @@ SplunkSessionRecorder.init({
   rumAccessToken: "H6t8M6YW2E33YG1OMRCFtw"
 });
 </script>
-<script>
+<script type="module" src="@opentelemetry/api">
 	import {trace} from '@opentelemetry/api'
 	this.newGame = function() {
             const tracer = trace.getTracer('pacman', '1.0.0');
