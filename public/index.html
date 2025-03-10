@@ -95,13 +95,12 @@
 <!-- Highscore -->
 <div class="content" id="highscore-content">
     <div class="button" id="back">&lt; back</div>
-
-<!-- Adding meaningful span for Highscore List Error - either invisible or MongoDB unavailable -->
+<!-- Adding meaningful span for Highscore List being empty as MongoDB dest IP unavailable -->
     <script>
-    	var span = tracer.startSpan('highscoreError', {
+    	var span = tracer.startSpan('highscoreListEmpty', {
         	attributes: { 	'workflow.name' : 'highscore',
                          	'error': true,
-                         	'error.message': 'Custom Highscore List Error - either invisible as destination not defined of MongoDB unavailable',
+                         	'error.message': 'Custom Error for Highscore List being empty as connection to MongoDB points to a different dest IP',
                          	'userID': 'PetarTrifonov'
         	}
         });
