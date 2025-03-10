@@ -393,12 +393,6 @@ function geronimo() {
                 console.log("new Game");
                 this.init(0);
                 this.pauseResume();
-		span = tracer.startSpan('NewGameStarted', {
-		  attributes: {
-		      'workflow.name': 'NewGameStarted',
-		      'userID': 'PetarT'
-		  }
-		});
             }
         };
 
