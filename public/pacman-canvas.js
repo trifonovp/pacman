@@ -389,17 +389,10 @@ function geronimo() {
 
         this.newGame = function() {
             var r = confirm("Are you sure you want to restart?");
-	    const tracer = trace.getTracer('pacman', '1.0.0');
             if (r) {
                 console.log("new Game");
                 this.init(0);
                 this.pauseResume();
-		span = tracer.startSpan('NewGameStarted', {
-		  attributes: {
-		      'workflow.name': 'NewGameStarted',
-		      'userID': 'PetarT'
-		  }
-		});
             }
         };
 

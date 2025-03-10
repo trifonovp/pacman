@@ -26,21 +26,6 @@ SplunkSessionRecorder.init({
   rumAccessToken: "H6t8M6YW2E33YG1OMRCFtw"
 });
 </script>
-<script>
-	import {trace} from '@opentelemetry/api'
-	this.newGame = function() {
-            const tracer = trace.getTracer('pacman', '1.0.0');
-            span = tracer.startSpan('NewGameStarted', {
-            	attributes: {
-                	'workflow.name': 'NewGameStarted',
-                	'userID': 'PetarT'
-                }
-            });
-	    span.end();
-         }
-</script>
-
-
     <meta charset="utf-8" />
     <title>Pac-Man</title>
     <link rel="stylesheet" href="style.css">
