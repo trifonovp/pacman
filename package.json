@@ -4,6 +4,7 @@
   "description": "Pac-Man Node.js Game",
   "author": "Ivan Font <ivan@ivanfont.com>",
   "main": "bin/server.js",
+  "type": "module",
   "scripts": {
     "start": "node -r @splunk/otel/instrument .",
     "dev": "nodemon ."
