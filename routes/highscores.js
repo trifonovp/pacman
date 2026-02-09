@@ -3,6 +3,9 @@ var router = express.Router();
 var bodyParser = require('body-parser');
 var Database = require('../lib/database');
 
+const opentelemetry = require('@opentelemetry/api');
+const tracer = opentelemetry.trace.getTracer('pacman-highscores')
+
 // create application/x-www-form-urlencoded parser
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
@@ -49,8 +52,15 @@ router.post('/', urlencodedParser, function(req, res, next) {
         userLevel = parseInt(req.body.level, 10);
 
     Database.getDb(req.app, function(err, db) {
+	const span = tracer.startSpan('initConnect',{'kind':opentelemetry.SpanKind.CLIENT});
+	span.setAttribute('db.system', 'mongodb')
+	span.setAttribute('db.name', "pacmandb")
         if (err) {
             return next(err);
+	    console.log('Failed to POST to/highscore');
+	    span.setAttribute('pacman_custom_message', 'Failed to connect to /highscore URL');
+	    span.setAttribute('error', true);
+	    span.setAttribute('sf_error', true);
         }
 
         // Insert high score with extra user data
