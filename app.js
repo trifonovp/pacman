@@ -1,6 +1,5 @@
 // Start Splunk OTel at the absolute beginning
 const { start } = require('@splunk/otel');
-start(); 
 
 const opentelemetry = require('@opentelemetry/api');
 const tracer = opentelemetry.trace.getTracer('pacman-tracer');
