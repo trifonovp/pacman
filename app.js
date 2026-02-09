@@ -1,3 +1,4 @@
+const { start } = require('@splunk/otel');
 const opentelemetry = require('@opentelemetry/api');
 const tracer = opentelemetry.trace.getTracer('my-tracer');
 
