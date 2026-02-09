@@ -4,7 +4,8 @@ var bodyParser = require('body-parser');
 var Database = require('../lib/database');
 
 const opentelemetry = require('@opentelemetry/api');
-const tracer = opentelemetry.trace.getTracer('pacman-highscores')
+// Initialize the tracer
+const tracer = opentelemetry.trace.getTracer('pacman-highscores');
 
 // create application/x-www-form-urlencoded parser
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
@@ -17,8 +18,14 @@ router.use(function timeLog (req, res, next) {
 
 router.get('/list', urlencodedParser, function(req, res, next) {
     console.log('[GET /highscores/list]');
+    
+    // Start a span for the GET operation
+    const span = tracer.startSpan('getHighscores', { kind: opentelemetry.SpanKind.CLIENT });
+
     Database.getDb(req.app, function(err, db) {
         if (err) {
+            span.setStatus({ code: opentelemetry.SpanStatusCode.ERROR, message: err.message });
+            span.end();
             return next(err);
         }
 
@@ -28,14 +35,22 @@ router.get('/list', urlencodedParser, function(req, res, next) {
             var result = [];
             if (err) {
                 console.log(err);
+                span.setStatus({ code: opentelemetry.SpanStatusCode.ERROR, message: err.message });
+            } else {
+                docs.forEach(function(item, index, array) {
+                    result.push({ 
+                        name: item['name'], 
+                        cloud: item['cloud'],
+                        zone: item['zone'], 
+                        host: item['host'],
+                        score: item['score'] 
+                    });
+                });
+                span.setStatus({ code: opentelemetry.SpanStatusCode.OK });
             }
 
-            docs.forEach(function(item, index, array) {
-                result.push({ name: item['name'], cloud: item['cloud'],
-                              zone: item['zone'], host: item['host'],
-                              score: item['score'] });
-            });
-
+            // End the span before sending the response
+            span.end();
             res.json(result);
         });
     });
@@ -48,19 +63,21 @@ router.post('/', urlencodedParser, function(req, res, next) {
                 ' user-agent =', req.headers['user-agent'],
                 ' referer =', req.headers.referer);
 
+    // Start a span for the POST/Insert operation
+    const span = tracer.startSpan('saveHighscore', { kind: opentelemetry.SpanKind.CLIENT });
+    span.setAttribute('db.system', 'mongodb');
+    span.setAttribute('db.name', 'pacmandb');
+
     var userScore = parseInt(req.body.score, 10),
         userLevel = parseInt(req.body.level, 10);
 
     Database.getDb(req.app, function(err, db) {
-	const span = tracer.startSpan('initConnect',{'kind':opentelemetry.SpanKind.CLIENT});
-	span.setAttribute('db.system', 'mongodb')
-	span.setAttribute('db.name', "pacmandb")
         if (err) {
+            console.log('Failed to connect to DB for /highscores');
+            span.setAttribute('pacman_custom_message', 'Failed to connect to database');
+            span.setStatus({ code: opentelemetry.SpanStatusCode.ERROR, message: err.message });
+            span.end(); // Span must end here if we return early
             return next(err);
-	    console.log('Failed to POST to/highscore');
-	    span.setAttribute('pacman_custom_message', 'Failed to connect to /highscore URL');
-	    span.setAttribute('error', true);
-	    span.setAttribute('sf_error', true);
         }
 
         // Insert high score with extra user data
@@ -71,25 +88,31 @@ router.post('/', urlencodedParser, function(req, res, next) {
                 host: req.body.host,
                 score: userScore,
                 level: userLevel,
-                date: Date(),
+                date: new Date(),
                 referer: req.headers.referer,
                 user_agent: req.headers['user-agent'],
                 hostname: req.hostname,
                 ip_addr: req.ip
             }, {
-                w: 'majority',
+                // FIXED: Changed 'majority' to 1 for single-node standalone MongoDB
+                w: 1, 
                 j: true,
                 wtimeout: 10000
             }, function(err, result) {
                 var returnStatus = '';
 
                 if (err) {
-                    console.log(err);
+                    console.log('Database Insert Error:', err);
+                    span.setStatus({ code: opentelemetry.SpanStatusCode.ERROR, message: err.message });
                     returnStatus = 'error';
                 } else {
                     console.log('Successfully inserted highscore');
+                    span.setStatus({ code: opentelemetry.SpanStatusCode.OK });
                     returnStatus = 'success';
                 }
+
+                // Finalize the span so it exports to Splunk APM
+                span.end();
 
                 res.json({
                     name: req.body.name,
