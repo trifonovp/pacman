@@ -15,6 +15,7 @@
     "@splunk/otel-web-session-recorder": "^2.1.0",
     "body-parser": "^1.20.0",
     "express": "^4.21.0",
+    "jade": "^1.11.0",
     "mongodb": "^6.10.0",
     "pug": "^3.0.3",
     "stable": "^0.1.8"
