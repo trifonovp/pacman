@@ -48,12 +48,11 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-// Connect to Database
 Database.connect(app, function(err) {
     if (err) {
-        console.error('Failed to connect to database server:', err);
+        console.error('Initial DB connection failed. Application will retry on first request.');
     } else {
-        console.log('Connected to database server successfully');
+        console.log('Database initialized on startup.');
     }
 });
 
