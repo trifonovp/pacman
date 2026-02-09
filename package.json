@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/instrumentation-mongodb": "^0.64.0",
     "@splunk/otel": "^4.3.0",
     "@splunk/otel-web": "^2.1.0",
     "@splunk/otel-web-session-recorder": "^2.1.0",
