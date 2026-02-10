@@ -1,15 +1,13 @@
-// Start Splunk OTel at the absolute beginning
-const { start } = require('@splunk/otel');
+'use strict';
 
+// 1. DO NOT call @splunk/otel start() here. It's handled by -r in your deployment.
 const opentelemetry = require('@opentelemetry/api');
 const tracer = opentelemetry.trace.getTracer('pacman-tracer');
-
-'use strict';
 
 var express = require('express');
 var path = require('path');
 var Database = require('./lib/database');
-var assert = require('assert');
+var bodyParser = require('body-parser');
 
 // Routes
 var highscores = require('./routes/highscores');
@@ -18,14 +16,11 @@ var loc = require('./routes/location');
 
 var app = express();
 
-// View engine setup
+// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// Static files
 app.use('/', express.static(path.join(__dirname, 'public')));
-
-// Mount routers
 app.use('/highscores', highscores);
 app.use('/user', user);
 app.use('/location', loc);
@@ -39,21 +34,17 @@ app.use(function(req, res, next) {
 
 // Error Handler
 app.use(function(err, req, res, next) {
-    if (res.headersSent) {
-        return next(err);
-    }
+    if (res.headersSent) { return next(err); }
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
     res.status(err.status || 500);
     res.render('error');
 });
 
-Database.connect(app, function(err) {
-    if (err) {
-        console.error('Initial DB connection failed. Application will retry on first request.');
-    } else {
-        console.log('Database initialized on startup.');
-    }
+// 2. Connect to Database WITHOUT crashing the pod on failure
+Database.connect(app).catch(err => {
+    console.error('Initial MongoDB connection failed. Server will stay up to report errors to APM.');
+    console.error('Error Details:', err.message);
 });
 
 module.exports = app;
