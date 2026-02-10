@@ -7,59 +7,55 @@ const opentelemetry = require('@opentelemetry/api');
 const tracer = opentelemetry.trace.getTracer('pacman-highscores');
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-router.get('/list', urlencodedParser, async function(req, res, next) {
-    try {
-        const db = await Database.getDb(req.app);
-        const docs = await db.collection('highscore').find({}).sort({ score: -1 }).limit(10).toArray();
-        res.json(docs);
-    } catch (err) {
-        console.error('Failed to retrieve list:', err.message);
-        res.status(500).json([]);
-    }
-});
-
-router.post('/', urlencodedParser, async function(req, res, next) {
-    console.log('[POST /highscores] Incoming request for:', req.body.name);
-
-    // Manual span creation to force the relationship in Splunk APM
+router.post('/', urlencodedParser, async function(req, res) {
+    // Manual span for Splunk APM
     const span = tracer.startSpan('mongodb.insert', {
         kind: opentelemetry.SpanKind.CLIENT,
-        attributes: {
-            'db.system': 'mongodb',
-            'db.name': 'pacman',
-            'db.operation': 'insert',
-            'db.statement': JSON.stringify({ name: req.body.name, score: req.body.score })
-        }
+        attributes: { 'db.system': 'mongodb', 'db.name': 'pacman', 'db.operation': 'insert' }
     });
 
     try {
         const db = await Database.getDb(req.app);
+        
+        // Save the metadata passed from the frontend
         await db.collection('highscore').insertOne({
             name: req.body.name,
             score: parseInt(req.body.score, 10),
+            cloud: req.body.cloud || 'unknown',
+            zone: req.body.zone || 'unknown',
+            host: req.body.host || 'unknown',
             date: new Date()
-        }, { w: 1 });
+        });
 
         span.setStatus({ code: opentelemetry.SpanStatusCode.OK });
         res.json({ rs: 'success' });
-
     } catch (err) {
-        console.error('Failed to save highscore:', err.message);
-
-        // Record the error for your Splunk Detector
         span.recordException(err);
-        span.setStatus({ 
-            code: opentelemetry.SpanStatusCode.ERROR, 
-            message: `Custom DB Error: ${err.message}` 
-        });
-        
-        span.setAttribute('error', true);
-        span.setAttribute('sf_error', true); // Indexed for SignalFlow
+        span.setStatus({ code: opentelemetry.SpanStatusCode.ERROR, message: err.message });
         span.setAttribute('pacman.highscore.error', 'database_connection_failure');
-
-        res.status(500).json({ rs: 'error', message: err.message });
+        res.status(500).json({ rs: 'error' });
     } finally {
-        span.end(); // Finalize and send to Splunk
+        span.end();
+    }
+});
+
+router.get('/list', async (req, res) => {
+    try {
+        const db = await Database.getDb(req.app);
+        const docs = await db.collection('highscore').find({}).sort({ score: -1 }).limit(10).toArray();
+        
+        // Ensure metadata fields are included in the response for image_02baa2.jpg
+        const result = docs.map(item => ({
+            name: item.name,
+            score: item.score,
+            cloud: item.cloud || 'unknown',
+            zone: item.zone || 'unknown',
+            host: item.host || 'unknown'
+        }));
+        
+        res.json(result);
+    } catch (e) { 
+        res.json([]); 
     }
 });
 
