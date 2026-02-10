@@ -114,3 +114,5 @@ router.post('/', urlencodedParser, async function(req, res, next) {
         span.end();
     }
 });
+
+module.exports = router;
