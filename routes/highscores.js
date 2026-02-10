@@ -2,13 +2,13 @@ var express = require('express');
 var router = express.Router();
 var bodyParser = require('body-parser');
 var Database = require('../lib/database');
+var loc = require('./location'); // Import local metadata logic
 const opentelemetry = require('@opentelemetry/api');
 
 const tracer = opentelemetry.trace.getTracer('pacman-highscores');
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 router.post('/', urlencodedParser, async function(req, res) {
-    // Manual span for Splunk APM
     const span = tracer.startSpan('mongodb.insert', {
         kind: opentelemetry.SpanKind.CLIENT,
         attributes: { 'db.system': 'mongodb', 'db.name': 'pacman', 'db.operation': 'insert' }
@@ -17,13 +17,24 @@ router.post('/', urlencodedParser, async function(req, res) {
     try {
         const db = await Database.getDb(req.app);
         
-        // Save the metadata passed from the frontend
+        // AUTO-FILL LOGIC: If frontend sends 'unknown', fetch real data from backend
+        let cloud = req.body.cloud;
+        let zone = req.body.zone;
+        let host = req.body.host;
+
+        if (!cloud || cloud === 'unknown' || !zone || zone === 'unknown') {
+            const meta = await loc.getMetadata();
+            cloud = cloud && cloud !== 'unknown' ? cloud : meta.cloud;
+            zone = zone && zone !== 'unknown' ? zone : meta.zone;
+            host = host && host !== 'unknown' ? host : meta.host;
+        }
+
         await db.collection('highscore').insertOne({
             name: req.body.name,
             score: parseInt(req.body.score, 10),
-            cloud: req.body.cloud || 'unknown',
-            zone: req.body.zone || 'unknown',
-            host: req.body.host || 'unknown',
+            cloud: cloud,
+            zone: zone,
+            host: host,
             date: new Date()
         });
 
@@ -43,20 +54,8 @@ router.get('/list', async (req, res) => {
     try {
         const db = await Database.getDb(req.app);
         const docs = await db.collection('highscore').find({}).sort({ score: -1 }).limit(10).toArray();
-        
-        // Ensure metadata fields are included in the response for image_02baa2.jpg
-        const result = docs.map(item => ({
-            name: item.name,
-            score: item.score,
-            cloud: item.cloud || 'unknown',
-            zone: item.zone || 'unknown',
-            host: item.host || 'unknown'
-        }));
-        
-        res.json(result);
-    } catch (e) { 
-        res.json([]); 
-    }
+        res.json(docs);
+    } catch (e) { res.json([]); }
 });
 
 module.exports = router;

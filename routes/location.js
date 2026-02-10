@@ -5,23 +5,25 @@ var router = express.Router();
 var fs = require('fs');
 var os = require('os');
 
-router.get('/metadata', async function(req, res) {
-    console.log('[GET /loc/metadata]');
-    const host = os.hostname();
-    
-    // Fallback if K8s API call fails
+// Helper to export metadata for other routes
+router.getMetadata = async function() {
     let cloud = process.env.CLOUD_PROVIDER || 'unknown';
     let zone = process.env.CLOUD_ZONE || 'unknown';
+    const host = os.hostname();
 
     try {
         const k8s = await getK8sMetadata();
-        cloud = k8s.cloud;
-        zone = k8s.zone;
+        if (k8s.cloud !== 'unknown') cloud = k8s.cloud;
+        if (k8s.zone !== 'unknown') zone = k8s.zone;
     } catch (e) {
-        console.log('K8s API unreachable, using env/fallbacks');
+        console.log('K8s API check skipped, using fallbacks');
     }
+    return { cloud, zone, host };
+};
 
-    res.json({ cloud, zone, host });
+router.get('/metadata', async function(req, res) {
+    const meta = await router.getMetadata();
+    res.json(meta);
 });
 
 function getK8sMetadata() {
@@ -39,7 +41,7 @@ function getK8sMetadata() {
             method: 'GET',
             ca: ca_file,
             headers: { 'Authorization': `Bearer ${sa_token}` },
-            timeout: 3000
+            timeout: 2000
         };
 
         const req = https.request(options, (res) => {
