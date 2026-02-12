@@ -5,7 +5,7 @@ var router = express.Router();
 var fs = require('fs');
 var os = require('os');
 
-const logger = require('./lib/logger');
+const logger = require('../lib/logger');
 
 // Helper to export metadata for other routes
 router.getMetadata = async function() {

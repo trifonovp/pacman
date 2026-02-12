@@ -6,7 +6,7 @@ var loc = require('./location'); // Import local metadata logic
 
 const opentelemetry = require('@opentelemetry/api');
 const tracer = opentelemetry.trace.getTracer('pacman-highscores');
-const logger = require('./lib/logger');
+const logger = require('../lib/logger');
 
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
