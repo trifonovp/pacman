@@ -1,26 +1,27 @@
 'use strict';
-
-const opentelemetry = require('@opentelemetry/api');
-const tracer = opentelemetry.trace.getTracer('pacman-tracer');
+const express = require('express');
+const path = require('path');
 const logger = require('./lib/logger');
-
-var express = require('express');
-var path = require('path');
-var Database = require('./lib/database');
-var bodyParser = require('body-parser');
+const opentelemetry = require('@opentelemetry/api');
+const Database = require('./lib/database');
 
 // Routes
-var highscores = require('./routes/highscores');
-var user = require('./routes/user');
-var loc = require('./routes/location');
+const highscores = require('./routes/highscores');
+const user = require('./routes/user');
+const loc = require('./routes/location');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+// MIDDLEWARE: Must be defined BEFORE routes
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use('/', express.static(path.join(__dirname, 'public')));
+
+// ROUTE MAPPING
 app.use('/highscores', highscores);
 app.use('/user', user);
 app.use('/location', loc);
@@ -35,14 +36,22 @@ app.use(function(req, res, next) {
 // Error Handler
 app.use(function(err, req, res, next) {
     if (res.headersSent) { return next(err); }
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
-    logger.error('Application Error', { message: err.message, status: err.status });
+    
+    // Logging application-level errors with Winston
+    logger.error('Application Error', { 
+        message: err.message, 
+        status: err.status,
+        stack: err.stack 
+    });
+    
     res.status(err.status || 500);
-    res.render('error');
+    res.render('error', {
+        message: err.message,
+        error: req.app.get('env') === 'development' ? err : {}
+    });
 });
 
-// 2. Connect to Database WITHOUT crashing the pod on failure
+// Database Connection: Persistent across app lifecycle
 Database.connect(app).catch(err => {
     logger.error('Initial MongoDB connection failed', { error: err.message });
 });

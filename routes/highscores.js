@@ -8,6 +8,7 @@ const opentelemetry = require('@opentelemetry/api');
 const tracer = opentelemetry.trace.getTracer('pacman-highscores');
 const logger = require('../lib/logger');
 
+// Note: express.json() in app.js handles most cases, but we keep this for safety
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 router.post('/', urlencodedParser, async function(req, res) {
@@ -18,12 +19,11 @@ router.post('/', urlencodedParser, async function(req, res) {
 
     try {
         const db = await Database.getDb(req.app);
-        
-        // AUTO-FILL LOGIC: If frontend sends 'unknown', fetch real data from backend
-        let cloud = req.body.cloud;
-        let zone = req.body.zone;
-        let host = req.body.host;
 
+        // DESTRUCTURING: Declares variables locally so logger can see them
+        let { name, score, cloud, zone, host } = req.body || {};
+
+        // AUTO-FILL LOGIC: If frontend sends 'unknown', fetch real data from backend
         if (!cloud || cloud === 'unknown' || !zone || zone === 'unknown') {
             const meta = await loc.getMetadata();
             cloud = cloud && cloud !== 'unknown' ? cloud : meta.cloud;
@@ -32,19 +32,23 @@ router.post('/', urlencodedParser, async function(req, res) {
         }
 
         await db.collection('highscore').insertOne({
-            name: req.body.name,
-            score: parseInt(req.body.score, 10),
+            name: name || 'Anonymous',
+            score: parseInt(score, 10) || 0,
             cloud: cloud,
             zone: zone,
             host: host,
             date: new Date()
         });
+
+        // FIXED: name and score are now defined via destructuring above
         logger.info('Highscore saved successfully', { name, score });
+        
         span.setStatus({ code: opentelemetry.SpanStatusCode.OK });
         res.json({ rs: 'success' });
     } catch (err) {
+        // Detailed error logging with trace context
         logger.error('Failed to save highscore', { error: err.message });
-	span.recordException(err);
+        span.recordException(err);
         span.setStatus({ code: opentelemetry.SpanStatusCode.ERROR, message: err.message });
         span.setAttribute('pacman.highscore.error', 'database_connection_failure');
         res.status(500).json({ rs: 'error' });
@@ -58,9 +62,9 @@ router.get('/list', async (req, res) => {
         const db = await Database.getDb(req.app);
         const docs = await db.collection('highscore').find({}).sort({ score: -1 }).limit(10).toArray();
         res.json(docs);
-    } catch (e) { 
+    } catch (e) {
         logger.error('Error fetching highscore list', { error: e.message });
-        res.json([]); 
+        res.json([]);
     }
 });
 
