@@ -1,8 +1,8 @@
 'use strict';
 
-// 1. DO NOT call @splunk/otel start() here. It's handled by -r in your deployment.
 const opentelemetry = require('@opentelemetry/api');
 const tracer = opentelemetry.trace.getTracer('pacman-tracer');
+const logger = require('./lib/logger');
 
 var express = require('express');
 var path = require('path');
@@ -43,8 +43,8 @@ app.use(function(err, req, res, next) {
 
 // 2. Connect to Database WITHOUT crashing the pod on failure
 Database.connect(app).catch(err => {
-    console.error('Initial MongoDB connection failed. Server will stay up to report errors to APM.');
-    console.error('Error Details:', err.message);
+    logger.error('Initial MongoDB connection failed. Server will stay up to report errors to APM.');
+    logger.error('error_details:', { err.message });
 });
 
 module.exports = app;

@@ -3,9 +3,11 @@ var router = express.Router();
 var bodyParser = require('body-parser');
 var Database = require('../lib/database');
 var loc = require('./location'); // Import local metadata logic
-const opentelemetry = require('@opentelemetry/api');
 
+const opentelemetry = require('@opentelemetry/api');
 const tracer = opentelemetry.trace.getTracer('pacman-highscores');
+const logger = require('./lib/logger');
+
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 router.post('/', urlencodedParser, async function(req, res) {

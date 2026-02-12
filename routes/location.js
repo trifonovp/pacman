@@ -5,6 +5,8 @@ var router = express.Router();
 var fs = require('fs');
 var os = require('os');
 
+const logger = require('./lib/logger');
+
 // Helper to export metadata for other routes
 router.getMetadata = async function() {
     let cloud = process.env.CLOUD_PROVIDER || 'unknown';
@@ -16,7 +18,7 @@ router.getMetadata = async function() {
         if (k8s.cloud !== 'unknown') cloud = k8s.cloud;
         if (k8s.zone !== 'unknown') zone = k8s.zone;
     } catch (e) {
-        console.log('K8s API check skipped, using fallbacks');
+        logger.info('K8s API check skipped, using fallbacks');
     }
     return { cloud, zone, host };
 };
