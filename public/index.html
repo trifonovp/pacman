@@ -10,10 +10,10 @@
     <script src="https://cdn.signalfx.com/o11y-gdi-rum/latest/splunk-otel-web.js" crossorigin="anonymous"></script>
     <script>
     	SplunkRum.init({
-        	realm: "us2",
-        	rumAccessToken: "H6t8M6YW2E33YG1OMRCFtw",
-        	applicationName: "pacman",
-        	deploymentEnvironment: "o11y2lab-local-nova"
+        	realm: "eu0",
+        	rumAccessToken: "uu96efZiVOqtThcn6Zn2Hw",
+        	applicationName: "pacman-nodejs-k8s",
+        	deploymentEnvironment: "o11y2lab"
     	});
     </script>
 
@@ -21,9 +21,9 @@
     <script src="https://cdn.signalfx.com/o11y-gdi-rum/latest/splunk-otel-web-session-recorder.js" crossorigin="anonymous"></script>
     <script>
 	SplunkSessionRecorder.init({
-  		app: "pacman",
-  		realm: "us2",
-  		rumAccessToken: "H6t8M6YW2E33YG1OMRCFtw"
+  		app: "pacman-nodejs-k8s",
+  		realm: "eu0",
+  		rumAccessToken: "uu96efZiVOqtThcn6Zn2Hw"
 	});
     </script>
 
@@ -97,10 +97,8 @@
     <div class="button" id="back">&lt; back</div>
 <!-- Adding meaningful span for Highscore List being empty as MongoDB dest IP unavailable -->
     <script>
-    	var span = tracer.startSpan('highscoreListEmpty', {
+    	var span = tracer.startSpan('HighscoreList', {
         	attributes: { 	'workflow.name' : 'highscore',
-                         	'error': true,
-                         	'error.message': 'Custom Error for Highscore List being empty as connection to MongoDB points to a different dest IP',
                          	'userID': 'PetarTrifonov'
         	}
         });
