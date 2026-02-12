@@ -39,11 +39,12 @@ router.post('/', urlencodedParser, async function(req, res) {
             host: host,
             date: new Date()
         });
-
+        logger.info('Highscore saved successfully', { name, score });
         span.setStatus({ code: opentelemetry.SpanStatusCode.OK });
         res.json({ rs: 'success' });
     } catch (err) {
-        span.recordException(err);
+        logger.error('Failed to save highscore', { error: err.message });
+	span.recordException(err);
         span.setStatus({ code: opentelemetry.SpanStatusCode.ERROR, message: err.message });
         span.setAttribute('pacman.highscore.error', 'database_connection_failure');
         res.status(500).json({ rs: 'error' });
@@ -57,7 +58,10 @@ router.get('/list', async (req, res) => {
         const db = await Database.getDb(req.app);
         const docs = await db.collection('highscore').find({}).sort({ score: -1 }).limit(10).toArray();
         res.json(docs);
-    } catch (e) { res.json([]); }
+    } catch (e) { 
+        logger.error('Error fetching highscore list', { error: e.message });
+        res.json([]); 
+    }
 });
 
 module.exports = router;

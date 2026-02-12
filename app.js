@@ -37,14 +37,14 @@ app.use(function(err, req, res, next) {
     if (res.headersSent) { return next(err); }
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
+    logger.error('Application Error', { message: err.message, status: err.status });
     res.status(err.status || 500);
     res.render('error');
 });
 
 // 2. Connect to Database WITHOUT crashing the pod on failure
 Database.connect(app).catch(err => {
-    logger.error('Initial MongoDB connection failed. Server will stay up to report errors to APM.');
-    logger.error('error_details:', { err.message });
+    logger.error('Initial MongoDB connection failed', { error: err.message });
 });
 
 module.exports = app;
